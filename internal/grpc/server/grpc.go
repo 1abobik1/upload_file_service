@@ -6,15 +6,19 @@ import (
 	"time"
 
 	pb "github.com/1abobik1/proto-upload-service/gen/go/upload_service/v1"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 type Config struct {
-	Port                 string
-	MaxConcurrentStreams int
-	ShutdownTimeout      time.Duration
+	Port                    string
+	MaxConcurrentStreams    int
+	FileOpsConcurrencyLimit int
+	ListConcurrencyLimit    int
+	ShutdownTimeout         time.Duration
 }
 
 type Server struct {
@@ -22,18 +26,32 @@ type Server struct {
 	config     Config
 }
 
-func New(config Config,fileService pb.FileServiceServer, fileOpsLimit, listOpsLimit int) *Server {
-	limiter := newConcurrencyLimiter(fileOpsLimit, listOpsLimit)
-	
+func New(config Config, fileService pb.FileServiceServer) *Server {
+	limiter := newConcurrencyLimiter(config.FileOpsConcurrencyLimit, config.ListConcurrencyLimit)
+
 	s := &Server{
 		config: config,
 	}
 
-	s.grpcServer = grpc.NewServer(
-		grpc.MaxConcurrentStreams(uint32(config.MaxConcurrentStreams)),
-		grpc.UnaryInterceptor(limiter.unaryInterceptor),
-		grpc.StreamInterceptor(limiter.streamInterceptor),
+	logger := logrus.New()
+	logger.SetLevel(logrus.DebugLevel)
+
+	unaryChain := grpc_middleware.ChainUnaryServer(
+		grpc_logrus.UnaryServerInterceptor(logrus.NewEntry(logger)),
+		limiter.unaryInterceptor,
 	)
+	streamChain := grpc_middleware.ChainStreamServer(
+		grpc_logrus.StreamServerInterceptor(logrus.NewEntry(logger)),
+		limiter.streamInterceptor,
+	)
+	
+	opts := []grpc.ServerOption{
+		grpc.MaxConcurrentStreams(uint32(config.MaxConcurrentStreams)),
+		grpc.UnaryInterceptor(unaryChain),
+		grpc.StreamInterceptor(streamChain),
+	}
+
+	s.grpcServer = grpc.NewServer(opts...)
 
 	pb.RegisterFileServiceServer(s.grpcServer, fileService)
 	reflection.Register(s.grpcServer)

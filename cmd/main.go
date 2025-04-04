@@ -6,8 +6,8 @@ import (
 	"syscall"
 
 	"github.com/1abobik1/upload_file_service/internal/config"
-	"github.com/1abobik1/upload_file_service/internal/handler"
 	"github.com/1abobik1/upload_file_service/internal/grpc/server"
+	"github.com/1abobik1/upload_file_service/internal/handler"
 	"github.com/1abobik1/upload_file_service/internal/service"
 	"github.com/1abobik1/upload_file_service/internal/storage"
 	"github.com/sirupsen/logrus"
@@ -33,10 +33,12 @@ func main() {
 	fileHandler := handler.NewFileHandler(fileService)
 
 	srv := server.New(server.Config{
-		Port:                 cfg.GRPC.Port,
-		MaxConcurrentStreams: cfg.GRPC.MaxConcurrentStreams,
-		ShutdownTimeout:      cfg.GRPC.ShutdownTimeout,
-	}, fileHandler, cfg.GRPC.FileOpsConcurrencyLimit, cfg.GRPC.ListConcurrencyLimit)
+		Port:                    cfg.GRPC.Port,
+		MaxConcurrentStreams:    cfg.GRPC.MaxConcurrentStreams,
+		ShutdownTimeout:         cfg.GRPC.ShutdownTimeout,
+		FileOpsConcurrencyLimit: cfg.GRPC.FileOpsConcurrencyLimit,
+		ListConcurrencyLimit:    cfg.GRPC.ListConcurrencyLimit,
+	}, fileHandler)
 
 	logrus.Infof("cfg.GRPC.FileOpsConcurrencyLimit: %v,  cfg.GRPC.ListConcurrencyLimit: %v", cfg.GRPC.FileOpsConcurrencyLimit, cfg.GRPC.ListConcurrencyLimit)
 	go func() {

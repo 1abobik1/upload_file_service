@@ -4,6 +4,7 @@ import (
 	"io"
 
 	pb "github.com/1abobik1/proto-upload-service/gen/go/upload_service/v1"
+	"github.com/1abobik1/upload_file_service/internal/apperrors"
 )
 
 // чтение чанков и их объединение в единый срез
@@ -18,6 +19,9 @@ func readUploadStream(stream interface {
 		}
 		if err != nil {
 			return nil, err
+		}
+		if filename := req.GetFilename(); filename != "" {
+			return nil, apperrors.ErrFilenameProvidedTwice
 		}
 		data = append(data, req.GetChunk()...)
 	}
@@ -36,6 +40,9 @@ func readUpdateStream(stream interface {
 		}
 		if err != nil {
 			return nil, err
+		}
+		if fileID := req.GetFileId(); fileID != "" {
+			return nil, apperrors.ErrFileIDProvidedTwice
 		}
 		data = append(data, req.GetChunk()...)
 	}
