@@ -5,7 +5,7 @@
 docker-compose up
 ```
 
-### Вот репозиторий с автогенерированными protobuf-файлами, который использует мой сервер
+### Вот репозиторий с автосгенерированными protobuf-файлами, который использует мой сервер
 [https://github.com/1abobik1/proto-upload-service](https://github.com/1abobik1/proto-upload-service)
 
 ### Интеграционные тесты находятся в папке `tests/integration`. Для их запуска используй команду (примечание: для Windows используй консоль Git Bash)
