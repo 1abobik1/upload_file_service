@@ -1,0 +1,34 @@
+
+services:
+  test-minio:
+    image: minio/minio
+    ports:
+      - "9002:9000"  # Основной порт API
+      - "9003:9001"  # Консольный порт
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --address ":9000" --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+
+  test-server:
+    build:
+      context: ../..
+      dockerfile: tests/integration/Dockerfile
+    volumes:
+      - ../../tests/integration:/app/tests/integration
+    working_dir: /app
+    environment:
+      MINIO_ENDPOINT: test-minio:9000
+      MINIO_BUCKET: test-uploads-${TEST_RUN_ID:-test}
+      GRPC_PORT: 50052
+    depends_on:
+      test-minio:
+        condition: service_healthy
+
+# для запуска этого контейнера лучше использовать вот такую команду
+# TEST_RUN_ID=$(date +%s) docker-compose -f tests/integration/docker-compose.test.yml up --build

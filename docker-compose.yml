@@ -1,0 +1,44 @@
+services:
+  minio:
+    container_name: minio
+    image: minio/minio
+    env_file:
+      - .env
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+
+  app:
+    container_name: upload-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "localhost:host-gateway"
+    env_file:
+      - .env
+    ports:
+      - "50051:50051"
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: on-failure
+
+volumes:
+  minio_data:
+
+networks:
+  app-network:
+    driver: bridge
