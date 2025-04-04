@@ -20,4 +20,4 @@ cd .\client\example\
 go run main.go -server localhost:50051 -file ./test_photo.jpg -insecure
 ```
 После флага `-file` указывается путь до файла, который ты хочешь загрузить.
-```
+
