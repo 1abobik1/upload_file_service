@@ -8,12 +8,12 @@ docker-compose up
 ### Вот репозиторий с автосгенерированными protobuf-файлами, который использует мой сервер
 [https://github.com/1abobik1/proto-upload-service](https://github.com/1abobik1/proto-upload-service)
 
-### Интеграционные тесты находятся в папке `tests/integration`. Для их запуска используй команду (примечание: для Windows используй консоль Git Bash)
+### Также я написал интеграционные тесты, которые находятся в папке `tests/integration`. Для их запуска используй команду (примечание: для Windows используй консоль Git Bash)
 ```bash
 TEST_RUN_ID=$(date +%s) docker-compose -f tests/integration/docker-compose.test.yml up --build
 ```
 
-### Также я написал клиента для работы с API, чтобы было легче понять как взаимодействовать:
+### Написал клиента для работы с API, чтобы было легче понять как взаимодействовать с сервером:
 Команды для запуска клиента
 ```bash
 cd .\client\example\
