@@ -2,9 +2,7 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"io"
-	"time"
 
 	pb "github.com/1abobik1/proto-upload-service/gen/go/upload_service/v1"
 	"github.com/1abobik1/upload_file_service/internal/apperrors"
@@ -101,9 +99,6 @@ func (h *FileHandler) GetDownloadLink(ctx context.Context, req *pb.DownloadLinkR
 }
 
 func (h *FileHandler) ListFiles(ctx context.Context, _ *pb.ListRequest) (*pb.ListResponse, error) {
-	fmt.Println("ListFiles....")
-	time.Sleep(time.Second * 10)
-
 	files, err := h.service.ListFiles(ctx)
 	if err != nil {
 		return nil, apperrors.MapErrorToStatus(err)
